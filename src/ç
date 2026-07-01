@@ -1,0 +1,199 @@
+"""SABD Project 2 — Query 2 (PyFlink) — minimal pre-aggregation stage.
+
+For each origin airport and each event-time tumbling window we emit
+ONLY four primitive numbers:
+
+    window_start, window_end, airport_id,
+    num_flights, severe_delays, sum_dep_delay, max_dep_delay
+
+That is enough to compute the spec output downstream:
+    mean = sum_dep_delay / num_flights
+    severe_delays count and max_dep_delay are direct
+
+Two windows are produced here:
+    * 1 hour  -> Results/q2_1h
+    * 6 hours -> Results/q2_6h
+
+The "from start of dataset" window AND the per-airport list of top-20
+severely-delayed flights are reconstructed by the post-processing
+script `src/postprocess_q2.py` from the events.csv source. This avoids
+keeping unbounded Python lists in Flink state (cause of the OOM in the
+first attempt) and avoids PICKLED_BYTE_ARRAY serialization (cause of
+the throughput collapse in the second attempt).
+
+Filter: only non-cancelled, non-diverted flights are aggregated.
+"""
+import argparse
+import os
+from datetime import datetime
+
+from pyflink.common import Duration, Types, WatermarkStrategy
+from pyflink.common.serialization import Encoder
+from pyflink.common.time import Time
+from pyflink.common.watermark_strategy import TimestampAssigner
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.datastream.data_stream import DataStream
+from pyflink.datastream.connectors.file_system import (
+    FileSink, OutputFileConfig, RollingPolicy,
+)
+from pyflink.datastream.functions import AggregateFunction, ProcessWindowFunction
+from pyflink.datastream.window import TumblingEventTimeWindows
+
+SEVERE_DELAY_THRESHOLD = 30.0
+
+
+# ----- parser ---------------------------------------------------------------
+
+def parse_event(line: str):
+    """Parse one CSV line; yield only non-cancelled, non-diverted flights."""
+    try:
+        p = line.strip().split(",")
+        if len(p) < 17:
+            return
+        def _f(s):
+            return float(s) if s.strip() != "" else 0.0
+        cancelled = _f(p[9])
+        diverted = _f(p[10])
+        if cancelled >= 1.0 or diverted >= 1.0:
+            return
+        # Stream tuple: only what the aggregator needs.
+        yield (
+            int(p[4]),           # ORIGIN_AIRPORT_ID
+            _f(p[7]),            # DEP_DELAY
+            int(p[16]),          # event_time (ms)
+        )
+    except Exception:
+        return
+
+
+class EventTimeAssigner(TimestampAssigner):
+    def extract_timestamp(self, value, record_timestamp):
+        return value[2]
+
+
+# ----- per-airport incremental aggregator -----------------------------------
+
+class AirportAggregator(AggregateFunction):
+    """Compact stats per (airport, window).
+
+    Accumulator: (num_flights, severe_delays, sum_dep_delay, max_dep_delay).
+    All primitive types -> efficient Flink serialization, no Python pickle.
+    """
+
+    def create_accumulator(self):
+        return (0, 0, 0.0, -1e18)  # num, severe, sum, max
+
+    def add(self, value, acc):
+        _, dep_delay, _ = value
+        num, severe, sum_d, max_d = acc
+        num += 1
+        sum_d += dep_delay
+        if dep_delay > max_d:
+            max_d = dep_delay
+        if dep_delay > SEVERE_DELAY_THRESHOLD:
+            severe += 1
+        return (num, severe, sum_d, max_d)
+
+    def get_result(self, acc):
+        return acc
+
+    def merge(self, a, b):
+        return (a[0] + b[0], a[1] + b[1], a[2] + b[2], max(a[3], b[3]))
+
+
+# ----- window function emits one CSV line per (airport, window) -------------
+
+class FormatAirportFn(ProcessWindowFunction):
+    def process(self, key, ctx, elements):
+        acc = next(iter(elements))
+        num, severe, sum_d, max_d = acc
+        if num == 0:
+            return
+        ws = ctx.window().start
+        we = ctx.window().end
+        def fmt(ms):
+            return datetime.utcfromtimestamp(ms / 1000).strftime("%Y-%m-%d %H:%M:%S")
+        airport_id = key
+        yield (f"{fmt(ws)},{fmt(we)},{airport_id},"
+               f"{num},{severe},{sum_d:.4f},{max_d:.2f}")
+
+
+# ----- sink helper ----------------------------------------------------------
+
+def make_sink(directory: str, prefix: str) -> FileSink:
+    os.makedirs(directory, exist_ok=True)
+    return (
+        FileSink
+        .for_row_format(directory, Encoder.simple_string_encoder())
+        .with_output_file_config(
+            OutputFileConfig.builder()
+            .with_part_prefix(prefix)
+            .with_part_suffix(".csv")
+            .build()
+        )
+        .with_rolling_policy(RollingPolicy.default_rolling_policy())
+        .build()
+    )
+
+
+# ----- main -----------------------------------------------------------------
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--host", default="feeder")
+    ap.add_argument("--port", type=int, default=9999)
+    ap.add_argument("--output-root", default="/opt/flink/app/Results")
+    ap.add_argument("--parallelism", type=int, default=1)
+    ap.add_argument("--watermark-lateness-sec", type=int, default=60)
+    args = ap.parse_args()
+
+    env = StreamExecutionEnvironment.get_execution_environment()
+    env.set_parallelism(args.parallelism)
+
+    # Source via Java env (PyFlink 1.20 doesn't expose socket_text_stream).
+    j_socket = env._j_stream_execution_environment.socketTextStream(
+        args.host, args.port
+    )
+    raw = DataStream(j_socket)
+
+    parsed = raw.flat_map(
+        parse_event,
+        output_type=Types.TUPLE([Types.INT(), Types.FLOAT(), Types.LONG()]),
+    )
+
+    wm = (
+        WatermarkStrategy
+        .for_bounded_out_of_orderness(Duration.of_seconds(args.watermark_lateness_sec))
+        .with_timestamp_assigner(EventTimeAssigner())
+    )
+    events = parsed.assign_timestamps_and_watermarks(wm)
+
+    keyed = events.key_by(lambda x: x[0], key_type=Types.INT())
+
+    # Accumulator type: primitive tuple, efficient serialization.
+    acc_type = Types.TUPLE([Types.INT(), Types.INT(),
+                            Types.DOUBLE(), Types.DOUBLE()])
+
+    plans = [
+        ("q2_1h", Time.hours(1)),
+        ("q2_6h", Time.hours(6)),
+    ]
+    for subdir, window_size in plans:
+        out_dir = os.path.join(args.output_root, subdir)
+        agg = (
+            keyed
+            .window(TumblingEventTimeWindows.of(window_size))
+            .aggregate(
+                AirportAggregator(),
+                FormatAirportFn(),
+                accumulator_type=acc_type,
+                output_type=Types.STRING(),
+            )
+        )
+        agg.sink_to(make_sink(out_dir, subdir))
+
+    env.execute("SABD-P2-Q2-minimal")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,4 @@
+parallelism,total_time_sec,events_processed,throughput_ev_per_sec,output_lines
+1,222.9,2229453,10002,9765
+2,222.9,2229453,10002,9765
+4,222.9,2229453,10002,9765

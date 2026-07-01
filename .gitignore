@@ -1,0 +1,59 @@
+# --- Data (large files: excluded, regenerate with preprocess.py) ---
+data/*.csv
+data/*.tar.gz
+data/events.csv
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+*.egg
+venv/
+env/
+.venv/
+.env
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# --- LaTeX build artefacts ---
+Report/*.aux
+Report/*.log
+Report/*.out
+Report/*.toc
+Report/*.synctex.gz
+Report/*.fdb_latexmk
+Report/*.fls
+Report/*.bbl
+Report/*.blg
+Report/*.nav
+Report/*.snm
+Report/*.vrb
+slides/*.aux
+slides/*.log
+slides/*.out
+slides/*.toc
+slides/*.synctex.gz
+slides/*.nav
+slides/*.snm
+slides/*.vrb
+
+# --- Debug / temporary logs ---
+debug.log
+run_q2_*.log
+*.pid
+
+# --- Author-internal defense preparation (not for delivery) ---
+Report/defense_walkthrough.tex
+Report/defense_walkthrough.pdf
+Report/defense_walkthrough.md

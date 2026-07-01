@@ -1,0 +1,73 @@
+# Apache Flink + Python feeder for SABD Project 2 (1-student team).
+#
+#   Services:
+#     - feeder       Python TCP server replaying events.csv with acceleration
+#     - jobmanager   Flink coordinator (UI :8081, RPC :6123) + PyFlink runtime
+#     - taskmanager  Flink executor (4 task slots) + PyFlink runtime
+#
+# All services share the network `sabd2_net` so Flink can reach the
+# feeder by hostname `feeder` on port 9999.
+
+services:
+
+  feeder:
+    build:
+      context: ../feeder
+      dockerfile: Dockerfile
+    image: sabd2/feeder:latest
+    container_name: sabd2_feeder
+    hostname: feeder
+    restart: unless-stopped
+    volumes:
+      - ../data:/opt/feeder/data:ro
+    command: >
+      python -u /opt/feeder/feeder.py
+      --input /opt/feeder/data/events.csv
+      --port 9999
+      --acceleration 60000
+    networks:
+      - sabd2_net
+
+  jobmanager:
+    build:
+      context: .
+      dockerfile: Dockerfile.flink
+    image: sabd2/flink-pyflink:1.20
+    container_name: sabd2_jobmanager
+    hostname: jobmanager
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+      - "6123:6123"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    volumes:
+      - ..:/opt/flink/app
+    depends_on:
+      - feeder
+    networks:
+      - sabd2_net
+
+  taskmanager:
+    build:
+      context: .
+      dockerfile: Dockerfile.flink
+    image: sabd2/flink-pyflink:1.20
+    container_name: sabd2_taskmanager
+    hostname: taskmanager
+    restart: unless-stopped
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - TASK_MANAGER_NUMBER_OF_TASK_SLOTS=4
+    volumes:
+      - ..:/opt/flink/app
+    networks:
+      - sabd2_net
+
+networks:
+  sabd2_net:
+    driver: bridge

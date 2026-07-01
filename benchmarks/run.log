@@ -1,0 +1,101 @@
+
+==========================================
+  Q1 benchmark: parallelism=1
+==========================================
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+Job has been submitted with JobID 72d1a9443303cb73fcaa3298bcac68bb
+  JobID: 72d1a9443303cb73fcaa3298bcac68bb
+  [20:19:43] state=RUNNING | [feeder] listening on 0.0.0.0:9999
+  [20:20:14] state=RUNNING | [feeder] sent 100,000 / 2,229,453 (elapsed 18.4s)
+  [20:20:46] state=RUNNING | [feeder] sent 200,000 / 2,229,453 (elapsed 51.8s)
+  [20:21:18] state=RUNNING | [feeder] sent 300,000 / 2,229,453 (elapsed 81.0s)
+  [20:21:49] state=RUNNING | [feeder] sent 400,000 / 2,229,453 (elapsed 109.5s)
+  [20:22:18] state=RUNNING | [feeder] sent 550,000 / 2,229,453 (elapsed 144.8s)
+  [20:22:49] state=RUNNING | [feeder] sent 700,000 / 2,229,453 (elapsed 179.8s)
+  [20:23:20] state=RUNNING | [feeder] sent 800,000 / 2,229,453 (elapsed 202.9s)
+  [20:23:50] state=RUNNING | [feeder] sent 950,000 / 2,229,453 (elapsed 234.7s)
+  [20:24:20] state=RUNNING | [feeder] sent 1,100,000 / 2,229,453 (elapsed 268.9s)
+  [20:24:50] state=RUNNING | [feeder] sent 1,250,000 / 2,229,453 (elapsed 299.3s)
+  [20:25:21] state=RUNNING | [feeder] sent 1,350,000 / 2,229,453 (elapsed 320.3s)
+  [20:25:51] state=RUNNING | [feeder] sent 1,500,000 / 2,229,453 (elapsed 353.1s)
+  [20:26:21] state=RUNNING | [feeder] sent 1,650,000 / 2,229,453 (elapsed 384.1s)
+  [20:26:51] state=RUNNING | [feeder] sent 1,800,000 / 2,229,453 (elapsed 414.8s)
+  [20:27:22] state=RUNNING | [feeder] sent 1,950,000 / 2,229,453 (elapsed 447.7s)
+  [20:27:52] state=RUNNING | [feeder] sent 2,100,000 / 2,229,453 (elapsed 481.3s)
+  [20:28:22] state=RUNNING | [feeder] done: sent 2,229,453 rows
+  [20:28:52] state=FINISHED | [feeder] done: sent 2,229,453 rows
+  -> FINISHED, wall=549s feeder_elapsed=222.9s, events=2229453, throughput=10002 ev/s, lines=9765
+rm: cannot remove 'Results/q1_p1/2026-06-30--16/q1-98d8a0fd-564c-4d60-98c1-72c3cab35443-2.csv': Permission denied
+rm: cannot remove 'Results/q1_p1/2026-06-30--16/q1-98d8a0fd-564c-4d60-98c1-72c3cab35443-3.csv': Permission denied
+rm: cannot remove 'Results/q1_p1/2026-06-30--16/q1-98d8a0fd-564c-4d60-98c1-72c3cab35443-1.csv': Permission denied
+rm: cannot remove 'Results/q1_p1/2026-06-30--16/q1-98d8a0fd-564c-4d60-98c1-72c3cab35443-0.csv': Permission denied
+
+==========================================
+  Q1 benchmark: parallelism=2
+==========================================
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+Job has been submitted with JobID 71a0e770189e567b4a2589939a311b68
+  JobID: 71a0e770189e567b4a2589939a311b68
+  [20:29:36] state=RUNNING | [feeder] listening on 0.0.0.0:9999
+  [20:30:06] state=RUNNING | [feeder] sent 100,000 / 2,229,453 (elapsed 14.6s)
+  [20:30:36] state=RUNNING | [feeder] sent 250,000 / 2,229,453 (elapsed 49.8s)
+  [20:31:07] state=RUNNING | [feeder] sent 350,000 / 2,229,453 (elapsed 77.3s)
+  [20:31:37] state=RUNNING | [feeder] sent 500,000 / 2,229,453 (elapsed 114.7s)
+  [20:32:07] state=RUNNING | [feeder] sent 600,000 / 2,229,453 (elapsed 136.7s)
+  [20:32:38] state=RUNNING | [feeder] sent 750,000 / 2,229,453 (elapsed 169.1s)
+  [20:33:08] state=RUNNING | [feeder] sent 900,000 / 2,229,453 (elapsed 203.7s)
+  [20:33:39] state=RUNNING | [feeder] sent 1,050,000 / 2,229,453 (elapsed 236.8s)
+  [20:34:09] state=RUNNING | [feeder] sent 1,200,000 / 2,229,453 (elapsed 266.9s)
+  [20:34:39] state=RUNNING | [feeder] sent 1,300,000 / 2,229,453 (elapsed 291.4s)
+  [20:35:09] state=RUNNING | [feeder] sent 1,450,000 / 2,229,453 (elapsed 321.2s)
+  [20:35:40] state=RUNNING | [feeder] sent 1,600,000 / 2,229,453 (elapsed 351.4s)
+  [20:36:10] state=RUNNING | [feeder] sent 1,750,000 / 2,229,453 (elapsed 386.3s)
+  [20:36:40] state=RUNNING | [feeder] sent 1,900,000 / 2,229,453 (elapsed 416.5s)
+  [20:37:10] state=RUNNING | [feeder] sent 2,050,000 / 2,229,453 (elapsed 448.8s)
+  [20:37:41] state=RUNNING | [feeder] sent 2,200,000 / 2,229,453 (elapsed 479.5s)
+  [20:38:11] state=FINISHED | [feeder] done: sent 2,229,453 rows
+  -> FINISHED, wall=516s feeder_elapsed=222.9s, events=2229453, throughput=10002 ev/s, lines=9765
+rm: cannot remove 'Results/q1_p2/2026-06-30--17/q1-bf9b21bb-33c1-42e1-ab4f-3d2646d5aa77-1.csv': Permission denied
+rm: cannot remove 'Results/q1_p2/2026-06-30--17/q1-bf9b21bb-33c1-42e1-ab4f-3d2646d5aa77-0.csv': Permission denied
+rm: cannot remove 'Results/q1_p2/2026-06-30--16/q1-00d95f8e-2b4f-41a5-a6cc-3899110283b0-1.csv': Permission denied
+rm: cannot remove 'Results/q1_p2/2026-06-30--16/q1-00d95f8e-2b4f-41a5-a6cc-3899110283b0-0.csv': Permission denied
+
+==========================================
+  Q1 benchmark: parallelism=4
+==========================================
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+WARNING: Unknown module: jdk.compiler specified to --add-exports
+Job has been submitted with JobID 06ecdd8e1809a428aa3fe25a9735a5d5
+  JobID: 06ecdd8e1809a428aa3fe25a9735a5d5
+  [20:38:54] state=RUNNING | [feeder] listening on 0.0.0.0:9999
+  [20:39:24] state=RUNNING | [feeder] sent 150,000 / 2,229,453 (elapsed 24.4s)
+  [20:39:54] state=RUNNING | [feeder] sent 250,000 / 2,229,453 (elapsed 47.9s)
+  [20:40:25] state=RUNNING | [feeder] sent 400,000 / 2,229,453 (elapsed 78.6s)
+  [20:40:55] state=RUNNING | [feeder] sent 550,000 / 2,229,453 (elapsed 110.9s)
+  [20:41:25] state=RUNNING | [feeder] sent 700,000 / 2,229,453 (elapsed 145.7s)
+  [20:41:56] state=RUNNING | [feeder] sent 800,000 / 2,229,453 (elapsed 167.5s)
+  [20:42:26] state=RUNNING | [feeder] sent 950,000 / 2,229,453 (elapsed 196.0s)
+  [20:42:56] state=RUNNING | [feeder] sent 1,100,000 / 2,229,453 (elapsed 229.1s)
+  [20:43:26] state=RUNNING | [feeder] sent 1,250,000 / 2,229,453 (elapsed 264.8s)
+  [20:43:57] state=RUNNING | [feeder] sent 1,350,000 / 2,229,453 (elapsed 289.2s)
+  [20:44:27] state=RUNNING | [feeder] sent 1,500,000 / 2,229,453 (elapsed 319.5s)
+  [20:44:57] state=RUNNING | [feeder] sent 1,650,000 / 2,229,453 (elapsed 350.0s)
+  [20:45:27] state=RUNNING | [feeder] sent 1,800,000 / 2,229,453 (elapsed 383.0s)
+  [20:45:58] state=RUNNING | [feeder] sent 1,950,000 / 2,229,453 (elapsed 412.4s)
+  [20:46:28] state=RUNNING | [feeder] sent 2,100,000 / 2,229,453 (elapsed 441.5s)
+  [20:46:58] state=RUNNING | [feeder] done: sent 2,229,453 rows
+  [20:47:28] state=FINISHED | [feeder] done: sent 2,229,453 rows
+  -> FINISHED, wall=515s feeder_elapsed=222.9s, events=2229453, throughput=10002 ev/s, lines=9765
+rm: cannot remove 'Results/q1_p4/2026-06-30--17/q1-ab2456c4-c8db-4966-8a2f-92fb7508eb49-1.csv': Permission denied
+rm: cannot remove 'Results/q1_p4/2026-06-30--17/q1-ab2456c4-c8db-4966-8a2f-92fb7508eb49-0.csv': Permission denied
+rm: cannot remove 'Results/q1_p4/2026-06-30--17/q1-ab2456c4-c8db-4966-8a2f-92fb7508eb49-2.csv': Permission denied
+
+==========================================
+  All benchmarks done. Results:
+==========================================
+parallelism  total_time_sec  events_processed  throughput_ev_per_sec  output_lines
+1            222.9           2229453           10002                  9765
+2            222.9           2229453           10002                  9765
+4            222.9           2229453           10002                  9765
